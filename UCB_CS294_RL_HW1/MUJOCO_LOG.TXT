@@ -1,0 +1,6 @@
+Sun Nov 26 15:11:16 2017
+ERROR: Could not allocate memory
+
+Sun Nov 26 20:51:35 2017
+ERROR: Shadow framebuffer is not complete
+
