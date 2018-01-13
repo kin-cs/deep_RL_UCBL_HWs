@@ -53,79 +53,17 @@ def main():
     task_data = args.data_file
 
     # Load in expert policy observation data
-    data = load_data(task_data)
-    obs_data = np.array(data['observations'])
-    act_data = np.array(data['actions'])
+    -----------
+
 
     # Split data into train and test set
-    n = obs_data.shape[0]
-    obs_data, act_data = shuffle(obs_data, act_data, random_state=0)
-    split_val = int(n*0.8)
-    X_train = np.array(obs_data[:split_val])
-    X_test = np.array(obs_data[split_val:])
-    y_train = np.array(act_data[:split_val])
-    y_test = np.array(act_data[split_val:])
-
-    X_train = X_train.reshape(X_train.shape[0], obs_data.shape[1])
-    X_test = X_test.reshape(X_test.shape[0], obs_data.shape[1])
-    Y_train = y_train.reshape(y_train.shape[0], act_data.shape[2])
-    Y_test = y_test.reshape(y_test.shape[0], act_data.shape[2])
+    -----------
 
     # Create a feedforward neural network
-    model = Sequential()
-    model.add(Dense(256, activation='relu', input_shape=(obs_data.shape[1],)))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(act_data.shape[2], activation='linear'))
-
-    model.compile(loss='msle', optimizer='adam', metrics=['accuracy'])
-    model.fit(X_train, Y_train, batch_size=64, nb_epoch=80, verbose=1)
-    score = model.evaluate(X_test, Y_test, verbose=1)
-
-    model.save('models/' + task + '_cloned_model.h5')
+    -----------
 
     with tf.Session():
-        tf_util.initialize()
-        env = gym.make(args.envname)
-        max_steps = args.max_timesteps or env.spec.timestep_limit
-
-        returns = []
-        new_observations = []
-        new_exp_actions = []
-
-        model = load_model('models/' + task + '_cloned_model.h5')
-        for i in range(args.num_rollouts):
-            print('iter', i)
-            obs = env.reset()
-            done = False
-            totalr = 0.
-            steps = 0
-            while not done:
-                obs = np.array(obs)
-                print(obs)
-                exp_action = policy_fn(obs[None,:])
-                obs = obs.reshape(1, len(obs))
-                print(obs)
-                action = (model.predict(obs, batch_size=64, verbose=0))
-                # print 'obs: ' + str(obs)
-                # print "predicted: " + str(action)
-                # print "expert: " + str(exp_action)
-
-                new_observations.append(obs)
-                new_exp_actions.append(exp_action)
-                obs, r, done, _ = env.step(action)
-                totalr += r
-                steps += 1
-                if args.render:
-                    env.render()
-                if steps % 100 == 0: print("%i/%i"%(steps, max_steps))
-                if steps >= max_steps:
-                    break
-            returns.append(totalr)
-
-        print('returns', returns)
-        print('mean return', np.mean(returns))
-        print('std of return', np.std(returns))
+        ---------------
 
 if __name__ == '__main__':
     main()
